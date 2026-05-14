@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>马来西亚地方英雄评估：多赛益 vs 仁答</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --dol-said-color: #e67e22;
+            --rentap-color: #27ae60;
+            --bg-color: #f4f7f6;
+            --white: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        header {
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+        }
+        h1 { color: var(--primary); margin-bottom: 5px; }
+        .score-board {
+            position: sticky;
+            top: 10px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-align: center;
+            margin-bottom: 20px;
+            z-index: 100;
+        }
+        .section-title {
+            background: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 30px 0 20px;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        .question-card {
+            margin-bottom: 25px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        .question-text {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        .hero-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .hero-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-size: 1em;
+            color: white;
+        }
+        .btn-dol { background-color: var(--dol-said-color); }
+        .btn-dol:hover { opacity: 0.8; transform: scale(1.05); }
+        .btn-rentap { background-color: var(--rentap-color); }
+        .btn-rentap:hover { opacity: 0.8; transform: scale(1.05); }
+        
+        .feedback {
+            margin-top: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+        }
+        .correct { background-color: #d4edda; color: #155724; display: block; }
+        .wrong { background-color: #f8d7da; color: #721c24; display: block; }
+        
+        .dialogue-box {
+            font-style: italic;
+            color: #555;
+            padding: 10px;
+            border-left: 4px solid #ccc;
+            margin-bottom: 15px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="score-board">
+        得分: <span id="currentScore">0</span> / 20
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>地方英雄知识大挑战</h1>
+            <p>多赛益 (Dol Said) vs 仁答 (Rentap)</p>
+        </header>
+
+        <!-- Part 1: Description -->
+        <div class="section-title">第一部分：这是哪位英雄？（根据说明选择）</div>
+        <div id="part1"></div>
+
+        <!-- Part 2: Dialogue -->
+        <div class="section-title">第二部分：谁会说这句话？（根据背景选择英雄对白）</div>
+        <div id="part2"></div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <button onclick="window.location.reload()" style="padding: 15px 30px; cursor: pointer;">重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        const part1Data = [
+            { q: "他的原名是阿都沙益奥马 (Abdul Said bin Omar)。", a: "Dol" },
+            { q: "他是砂拉越斯可让河口 (Nanga Skrang) 的伊班人领袖。", a: "Rentap" },
+            { q: "他在1831年成功击退英国人的进攻。", a: "Dol" },
+            { q: "詹姆斯布洛克诬陷他的族人是海盗。", a: "Rentap" },
+            { q: "他拒绝向英国人缴纳十分之一的税收。", a: "Dol" },
+            { q: "他的称号在伊班语中意为“震动世界”。", a: "Rentap" },
+            { q: "他获得了乌鲁麻坡、双溪乌绒等地的军事协助。", a: "Dol" },
+            { q: "他使用坚固的铁木 (Kayu Belian) 建造堡垒。", a: "Rentap" },
+            { q: "他在1832年因为盟友倒戈相助英国人而战败。", a: "Dol" },
+            { q: "他在1854年撤退到武吉沙托 (Bukit Sadok) 建设堡垒。", a: "Rentap" }
+        ];
+
+        const part2Data = [
+            { d: "“南宁是我们的主权领土，我们绝不向英国人纳税！”", a: "Dol" },
+            { d: "“哪怕长屋被火烧毁，我也绝不向詹姆斯布洛克低头！”", a: "Rentap" },
+            { d: "“我们的武吉沙托堡垒是用最硬的铁木建的，敌人攻不进来！”", a: "Rentap" },
+            { d: "“英国人给我的退休金和土地，我接受了，现在我住在马六甲。”", a: "Dol" },
+            { d: "“我是南宁的首长，我要捍卫南宁的主权！”", a: "Dol" },
+            { d: "“詹姆斯布洛克凭什么摧毁我们伊班人在河口的住处？”", a: "Rentap" },
+            { d: "“乌鲁麻坡和林茂的兄弟们，感谢你们助我击退英国军！”", a: "Dol" },
+            { d: "“虽然我退兵到了乌鲁恩塔白，但我震动世界的意志不变。”", a: "Rentap" },
+            { d: "“1773年我出生在塞梅伦冈部落，这片土地是我的根。”", a: "Dol" },
+            { d: "“布洛克竟然说我们是海盗，这简直是莫大的侮辱！”", a: "Rentap" }
+        ];
+
+        let score = 0;
+
+        function checkAnswer(btn, selected, correct, feedbackId) {
+            const feedback = document.getElementById(feedbackId);
+            if (selected === correct) {
+                feedback.innerText = "正确！✅";
+                feedback.className = "feedback correct";
+                if (!btn.parentElement.dataset.answered) {
+                    score++;
+                    document.getElementById('currentScore').innerText = score;
+                }
+            } else {
+                feedback.innerText = "再想想哦... ❌";
+                feedback.className = "feedback wrong";
+            }
+            btn.parentElement.dataset.answered = "true";
+            // Disable buttons in this card after clicking
+            const buttons = btn.parentElement.querySelectorAll('button');
+            buttons.forEach(b => b.style.opacity = "0.6");
+        }
+
+        // Render Part 1
+        const p1Container = document.getElementById('part1');
+        part1Data.forEach((item, index) => {
+            p1Container.innerHTML += `
+                <div class="question-card">
+                    <div class="question-text">${index + 1}. ${item.q}</div>
+                    <div class="hero-options" id="p1-q${index}">
+                        <button class="hero-btn btn-dol" onclick="checkAnswer(this, 'Dol', '${item.a}', 'f-p1-${index}')">多赛益</button>
+                        <button class="hero-btn btn-rentap" onclick="checkAnswer(this, 'Rentap', '${item.a}', 'f-p1-${index}')">仁答</button>
+                    </div>
+                    <div id="f-p1-${index}" class="feedback"></div>
+                </div>
+            `;
+        });
+
+        // Render Part 2
+        const p2Container = document.getElementById('part2');
+        part2Data.forEach((item, index) => {
+            p2Container.innerHTML += `
+                <div class="question-card">
+                    <div class="dialogue-box">“${item.d}”</div>
+                    <div class="hero-options" id="p2-q${index}">
+                        <button class="hero-btn btn-dol" onclick="checkAnswer(this, 'Dol', '${item.a}', 'f-p2-${index}')">多赛益</button>
+                        <button class="hero-btn btn-rentap" onclick="checkAnswer(this, 'Rentap', '${item.a}', 'f-p2-${index}')">仁答</button>
+                    </div>
+                    <div id="f-p2-${index}" class="feedback"></div>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>
